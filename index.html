@@ -71,14 +71,18 @@ async function loadRates(){
    let res = await fetch(fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQoR0t-3IhCAfGiOqLBQHda2_DOtI4G6jLXtZL6wWmhkm66Uj3-mT3EgaeodM93lvPEZ12C_9H0kAD_/pub?gid=0&single=true&output=csv");
    let text = await res.text();
 
-   let rows = text.split("\\n").slice(1);
+  let rows = text.trim().split("\n").slice(1);
 
-   rows.forEach(r=>{
-     let [k,v] = r.split(",");
-     if(k && v){
-       config[k.trim()] = parseFloat(v.trim());
-     }
-   });
+rows.forEach(r=>{
+  let parts = r.split(",");
+  if(parts.length >= 2){
+    let k = parts[0].trim();
+    let v = parts[1].trim();
+    if(k && v){
+      config[k] = parseFloat(v);
+    }
+  }
+});
 
  }catch(e){
    console.log("Using default values");
