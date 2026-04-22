@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZIPTAPES Calculator</title>
+<style>
+body { font-family: Arial; background:#f5f7fa; margin:0; }
+.container { max-width:420px; margin:auto; padding:15px; }
+.card { background:white; padding:15px; border-radius:12px; }
+input, select, button { width:100%; padding:12px; margin:6px 0; }
+.result { font-size:26px; font-weight:bold; }
+</style>
+</head>
+<body>
+
+<div class="container">
+<div class="card">
+
+<h2>ZIPTAPES Pvt LTD</h2>
+<p>Length, Width, Microns… GUARANTEED</p>
+
+<select id="type" onchange="toggleSubtype(); calc()">
+<option>BOPP</option>
+<option>Masking</option>
+</select>
+
+<div id="subtypeBox">
+<select id="subtype" onchange="calc()">
+<option>Clear</option>
+<option>Brown</option>
+<option>Lemon</option>
+<option>Super</option>
+</select>
+</div>
+
+<select id="micron" onchange="calc()">
+<option>37</option>
+<option>38</option>
+<option>39</option>
+<option>40</option>
+<option>42</option>
+<option>45</option>
+<option>48</option>
+<option>50</option>
+<option>55</option>
+</select>
+
+<input id="width" placeholder="Width mm" type="number" oninput="calc()">
+<input id="length" placeholder="Length yards" type="number" oninput="calc()">
+
+<div class="result" id="result">Rs 0</div>
+
+<button onclick="loadRates()">Refresh Rates</button>
+
+</div>
+</div>
+
+<script>
+
+let config = {
+ rateStd:850,
+ rateSuper:900,
+ freight:4500,
+ profit:15,
+ maskPrice:239200
+};
+
+// 🔄 Load from Google Sheet
+async function loadRates(){
+ try{
+   let res = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQoR0t-3IhCAfGiOqLBQHda2_DOtI4G6jLXtZL6wWmhkm66Uj3-mT3EgaeodM93lvPEZ12C_9H0kAD_/pub?gid=0&single=true&output=csv");
+   let text = await res.text();
+
+   let rows = text.split("\\n").slice(1);
+
+   rows.forEach(r=>{
+     let [k,v] = r.split(",");
+     if(k && v){
+       config[k.trim()] = parseFloat(v.trim());
+     }
+   });
+
+ }catch(e){
+   console.log("Using default values");
+ }
+}
+
+// 👁 Hide subtype for masking
+function toggleSubtype(){
+ let type = document.getElementById("type").value;
+ document.getElementById("subtypeBox").style.display =
+   type === "BOPP" ? "block" : "none";
+}
+
+// 🧮 Calculation
+function calc(){
+ let type = document.getElementById("type").value;
+ let w = parseFloat(document.getElementById("width").value);
+ let l = parseFloat(document.getElementById("length").value);
+
+ if(!w || !l) return;
+
+ let workable = type==="BOPP"?1260:1250;
+ let pcs = Math.floor(workable / w);
+
+ if(pcs <= 0) return;
+
+ let jumbo;
+
+ if(type==="BOPP"){
+   let micron = parseFloat(document.getElementById("micron").value);
+   let subtype = document.getElementById("subtype").value;
+
+   let rate = subtype === "Super" ? config.rateSuper : config.rateStd;
+
+   let base = (micron * 5 * rate) + config.freight;
+   jumbo = base * (1 + config.profit/100);
+
+ } else {
+   jumbo = config.maskPrice;
+ }
+
+ let jl = type==="BOPP"?4320:2160;
+
+ let cost = (jumbo / jl / pcs) * l;
+ let making = (w/46)*15;
+ let final = cost + making;
+
+ document.getElementById("result").innerText =
+   "Rs " + final.toFixed(2);
+}
+
+// Init
+loadRates();
+toggleSubtype();
+
+</script>
+
+</body>
+</html>
