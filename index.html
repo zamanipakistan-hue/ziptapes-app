@@ -68,7 +68,7 @@ let config = {
 // 🔄 Load from Google Sheet
 async function loadRates(){
  try{
-   let res = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQoR0t-3IhCAfGiOqLBQHda2_DOtI4G6jLXtZL6wWmhkm66Uj3-mT3EgaeodM93lvPEZ12C_9H0kAD_/pub?gid=0&single=true&output=csv");
+   let res = await fetch(fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQoR0t-3IhCAfGiOqLBQHda2_DOtI4G6jLXtZL6wWmhkm66Uj3-mT3EgaeodM93lvPEZ12C_9H0kAD_/pub?gid=0&single=true&output=csv");
    let text = await res.text();
 
    let rows = text.split("\\n").slice(1);
